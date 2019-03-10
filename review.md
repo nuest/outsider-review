@@ -47,9 +47,11 @@ Estimated hours spent reviewing: 6
 
 _Wow - quite a big project you've created there. I'm not sure I can cover everything in this first round of review, so please understand I'm putting in a few questions in the following comments._
 
-Please find the full output of my review tests at 
+Please find the full output of my review tests at https://nuest.github.io/outsider-review/index.nb.html
 
 [Disclaimer: I did not do yet write my own module because of time constraints.]
+
+------
 
 - I make almost no comments on functions and argument  naming, because I could follow the current naming scheme quite well - I think the author did a good job of following the dev guide
 - _Contributor guide is missing_
@@ -117,5 +119,8 @@ Please find the full output of my review tests at
 - I really like the way you have structured the **module writing vignette** and weaved in background and basic information. I think they could be even better if you'd add more links to external resources (e.g. tutorials on writing Dockerfiles, on the specification of the `FROM` instruction in the Docker docs, `WORKDIR`, ..)
   - You could tell users about the `stevedore` package, which allows them to do the buidling of Docker images from R directly.
 
+------
+
 _Please excuse my brevity at some points, and don't be discouraged at all but the length of the comments. I think the package is a useful approach to packaging workflows and tools in a user friendly way and a great usage of container technology._
+
 It would be great to see this beeing picked up in your lab/your community of practice and see how people interact with each other's work based on outsider modules.
