@@ -24,6 +24,9 @@ library(magrittr)
 
 ## **Reviewer:** [\@nuest](https://github.com/nuest)
 
+This is my first review for ROpenSci - exciting!
+Thank you for the opportunity!
+
 ### Review Submitted:
 **`r cat(sprintf("**Last updated:** %s", Sys.Date()))`**
 
@@ -88,15 +91,19 @@ pkg_dir <- "/home/daniel/Documents/2019_ROpenSci-review/outsider"
 ### test local `outsider` install:
 
 ```{r test-local}
-install(pkg_dir, dependencies = T, build_vignettes = T)
+devtools::install(pkg_dir, dependencies = T, build_vignettes = T)
 ```
 
 ```{r github-rm}
 remove.packages("outsider")
 ```
+
 #### **comments:**
 
 <!-- record comments on local install here -->
+
+- Installation works smoothly from source.
+- You list "docker" as a system dependency. _Have considered checking for existence of Docker at installation time?_ Really curious here because I also have a Docker-related package.
 
 ***
 
@@ -110,8 +117,10 @@ devtools::install_github("AntonelliLab/outsider", dependencies = T, build_vignet
 
 <!-- record comments on github install here -->
 
-***
+- no problems to install from GitHub
+- the version number `0.0.0` seems curious to me though, I suggest to either go with the `.9000` versioning [as described here](http://r-pkgs.had.co.nz/description.html#version) if you think this is a development state, if you think you have a first working version (as the "active" repo status suggests), why not go with `0.1.0`?
 
+***
 
 
 ## Check package integrity
@@ -125,7 +134,52 @@ devtools::check(pkg_dir)
 
 <!-- record comments on checks here -->
 
-***
+- during check, one example and one test fails on my system:
+  - running the code from `module_search.R` manually works, but fails during check:
+  ```
+  E  checking examples (1.6s)
+   Running examples in ‘outsider-Ex.R’ failed
+   The error most likely occurred in:
+   
+   > base::assign(".ptime", proc.time(), pos = "CheckExEnv")
+   > ### Name: module_details
+   > ### Title: Look up details on module(s)
+   > ### Aliases: module_details
+   > 
+   > ### ** Examples
+   > 
+   > library(outsider)
+   > # return table of ALL available modules on GitHub
+   > # NOT RUN - takes too long
+   > # (available_modules <- module_search())
+   > 
+   > # look-up whether specific module exists
+   > # NOT RUN
+   > # repo <- 'dombennett/om..goodbye.world'
+   > # (suppressWarnings(module_exists(repo = repo)))
+   > repo <- 'dombennett/om..hello.world'
+   > (module_exists(repo = repo))
+   Error in open.connection(con, "rb") : HTTP error 401.
+   Calls: module_exists ... parse_and_simplify -> parseJSON -> parse_con -> open -> open.connection
+   Execution halted
+  ```
+  
+  - _ module_details() works (@test-search.R#94)_
+  
+  ```
+  ── 1. Error: module_details() works (@test-search.R#94)  ───────────
+  HTTP error 401.
+  1: module_details(repo = c(repo, "dombennett/om..mafft")) at testthat/test-search.R:94
+  2: lapply(X = repo, FUN = repo_search)
+  3: FUN(X[[i]], ...)
+  4: jsonlite::fromJSON(paste0(gh_search_repo_url, search_args))
+  5: parse_and_simplify(txt = txt, simplifyVector = simplifyVector, simplifyDataFrame = simplifyDataFrame, 
+         simplifyMatrix = simplifyMatrix, flatten = flatten, ...)
+  6: parseJSON(txt, bigint_as_char)
+  7: parse_con(txt, bigint_as_char)
+  8: open(con, "rb")
+  9: open.connection(con, "rb")
+  ```
 
 ### run tests on `outsider` source:
 
@@ -136,19 +190,20 @@ devtools::test(pkg_dir)
 
 <!-- record comments on tests here -->
 
-***
-
+- no failing test here :tada: !
 
 ### check `outsider` for goodpractice:
 
 ```{r test-goodpractice}
 goodpractice::gp(pkg_dir)
 ```
+
 #### **comments:**
 
 <!-- record comments on goodpractice here -->
 
-***
+- some problems here as before
+- IMHO the coverage is reasonable
 
 ## Check package metadata files
 
@@ -168,7 +223,9 @@ devtools::spell_check(pkg_dir)
 
 <!-- record comments on metadata files here -->
 
-***
+- in `README.md`: I recommend to have an empty line after headlines and a space after the `#`/`##` in the source code for readability
+- spellcheck: all fine
+- Add `phylotaR` and `ape` to `Suggests` because you use them in vignettes
 
 ## Check documentation
 
@@ -186,7 +243,7 @@ help(package = "outsider")
 
 <!-- record comments on help files here -->
 
-***
+- ...
 
 ### test `outsider` vignettes:
 
@@ -198,7 +255,17 @@ vignette(package = "outsider")
 
 <!-- record comments on vignettes here -->
 
-***
+- The contents links on https://antonellilab.github.io/outsider/articles/advanced_build.html do not work yet/content is missing
+- `outsider` covers a pretty complex problem! With the existing examples of one very basic "hello world" and one (to me very) complex analysis pipeline, I see room for a further example that shows a bit more but is not that domain specific, e.g. loading some data from a CSV and running a regression model, saving that to a file. For me as a user it would be great to know _how can I load my data, how call my function, and how access the output data_.
+- **Get Started**
+  - The code chunk using `input_sequences.fasta` does not work - would it be possible to let a user download (with R code) such a file and actually run that? I was a bit disappointed when I went though all previous steps and then was "stopped" unexpectedly.
+  - users often want to know what's going on, and outsider is doing quite a lot of magic - I suggest to mention `log_set` already in the get started documentation.
+  - "Uninstalling" - for users new to Docker, you could mention here how to removed the downloaded images.
+- **phyologenetic vignette**
+  - suggets to add a link to the outsider module on GitHub (https://github.com/DomBennett/om..mafft), potentially even to specific files, to help users explore this more complex module with the help of the vignette
+  - is there are particular reason for the repeated "library(outsider)" statements in each section?
+  - Can you make the output of `module_help(repo = 'dombennett/om..mafft', fname = 'mafft')` more helpful? Right now it only says "Run mafft". I think for the "story" of the vignette it would be much better to actually have some documentation there, e.g. reference papers and describe the function.
+  - In section "Alignment" - what should I look for as a user at the end? Can you add some visualisation here or describe what a user could do now with the output of the process?
 
 ## Test functionality:
 
@@ -210,22 +277,30 @@ library("outsider")
 ```
 
 ```{r parse-functions}
-exports <-ls("package:outsider")
+exports <- ls("package:outsider")
 exports
 ```
 
 <!-- experiment with package functions -->
 
 ```{r exp-chunk}
+# partial examples only!
 
+outsider:::vars_get
 
+outsider:::.run.outsider
+
+outsider:::repo_search("nuest/outsider")
+Sys.getenv("GITHUB_PAT")
 ```
 
 #### **comments:**
 
 <!-- record comments on package experimentation here -->
 
-***
+- _Is there a way to list all function names in a module?_ The Get Started vignette says "Once a function name is known of a particular .." - can I only do that via the help file? MAybe a `module_list(repo = 'dombennett/om..mafft')` is feasible to implement.
+- _Do you have any further development plans?_ I can imagine further developments (like building pipelines using a chain of modules), maybe you can put your ideas into GitHub issues for everyone to learn about them?
+- see comment about dev-functions starting with `.`
 
 ## Inspect code:
 
@@ -240,7 +315,6 @@ pkgreviewr::pkgreview_print_source("outsider")
 ```
 **\* might not be suitable for large packages with many exported functions**
 
-
 <br>
 <br>
 
@@ -248,6 +322,16 @@ pkgreviewr::pkgreview_print_source("outsider")
 
 <!-- record comments on package source code here -->
 
+- Idea: `.module_validate(..)` to validate the formal structure of a module - I now see there is `.module_check` :-) - I suggest to put this "TODO" into a GitHub issue so that potential collaborators see this is an open task, and not have a function that a user cann access with `:::` without any functionality. Or at least add a `warning("not implemented")`
+- I think the package does a good job to distinguish between user facing functions and internal functions (like `test()`)
+- formatting is alright
+- for `pkgdetails_get` I personally would rely on the package [`desc`](https://cran.r-project.org/package=desc) to do the parsing - you already have a number of imports and this lightweight one should not hurt
+- `.module_travis` - your approach means that the function will fail if the repo mooves, or if there is no internet connection... for me it's always a signal to reconsider the approach if you have a constant like a URL within a function body. I think it would be better to manage the "template" file within the codebase of the package.
+- `container.R`: your package code probable precedes `stevedore`, but if you find yourself writing code around calling docker with `sys::exec..` then it might be worth the effort to switch; things like [running containers remotely](https://github.com/AntonelliLab/outsider/issues/1) (if that is what you mean by "remote hosting") would come very cheaply then;
+- `search.R`:
+  - "code you wrote 6 months ago might just have been written by someone else": I suggest to add a warning after `tkn <- NULL` to make it more obvious when requests fail because of a missing token (and not because the token is not valid etc.)
+  - `info[['url']] <- paste0('https://github.com/', info[['repo']])` > reuse `gh_url` from the top of the same file
+  - `module_exists` is not implemented fully, see suggestion above (warning and/or GitHub issue)
 
 ## Review test suite:
 
@@ -267,5 +351,14 @@ covr::package_coverage(pkg_dir)
 
 <!-- record comments on testing suite here -->
 
-
-***
+- good job on using mocks, very educational for me to read a testsuite with mocks; hard for me though to give suggestions to improve, except: It might be worth the tradeoff of having some "integration tests" without any mocks, because with all the mocks it's hard for me to tell if you actually test a relevant amount of the control flow; you can always skip those tests if it is about speed, e.g. skip them unless and environment variable is set, and just let them run on Travis, where time is not that critical. Tests that I think are worth having as **integration tests** are the interaction with the GitHub API in `test-search.R`, the "main" function testing in `test-outsider.R`, `test-log.R` (i.e. run actual workflows, capture the output, and see if the user is (not) shown what she should see). You could also run integration tests with incomplete modules and see if they fail at the expected point.
+- the tests for the skeleton could be extended to cover the minimal contents of the module, not just the directory. I think this might be worth the effort towards an indirect formal specification how a module looks like.
+- in `test-docker.R`
+  - Tests that actually interact with Docker, e.g. using `docker_pull`, should be skipped on CRAN, see `?testthat::skip_on_cran`, or you add your own test function `skip_if_docker_is_not_available()` (later I saw a comment "TODO: add skips if no docker" - go for it :-) ! )
+  - the test "docker_build() and docker_img_rm() works"
+    - relies on the `img` variable from the previous test - that can quickly break. I suggest to either duplicate `img`, or move it outside of the `test_that(..)` function
+    - you should also test that the second execution of `docker_img_rm()` returns `FALSE`
+  - In general, **consider checking the state outside of your own functions**, e.g. `expect_warning(expect_equal(attr(system2("docker", args = c("inspect", img), stdout = TRUE, stderr = TRUE), "status"), 1))`, or with the package stevedore (also applies to `test-container.R`)
+- in `test-console.R`
+  - I suggest to use `expect_output(..)`, e.g. `expect_output(outsider:::cat_line('cat this'), "cat this")` (and also for `celebrate()` and `comfort()`)
+- `outsider:::vars_get()` - the function is only for testing, right? Then I think it would be better to add it to the test codebase, e.g. in `test-all.R`
